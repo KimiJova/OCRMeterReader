@@ -1,24 +1,21 @@
-from easyocr import Reader
 import cv2
-from PIL import ImageFont, ImageDraw, Image
 import numpy as np
 import re
+from easyocr import Reader
+from PIL import ImageFont, ImageDraw, Image, ImageColor
 
 # PARAMETERS
-languages_list = ['en', 'pt']
-gpu = True
+languages_list = ['en']
+gpu = False
 
 # Load image with error handling
 try:
-    img = cv2.imread("images/file_7.jpg")
+    img = cv2.imread("images/file_11.jpg")
     if img is None:
         raise ValueError("Image not found or path is incorrect.")
 except Exception as e:
     print(f"Error loading image: {e}")
     exit()
-
-# Copy original image for further processing
-original = img.copy()
 
 # Function to apply preprocessing filters
 def apply_filter(img):
@@ -33,13 +30,11 @@ def apply_filter(img):
     return thresh
 
 # Apply filter to image
-#img = apply_filter(img)
+img = apply_filter(img)
+cv2.imshow("Preprocessed image", img)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
 
-# Initialize EasyOCR Reader
-reader = Reader(languages_list, gpu=gpu)
-
-# Perform OCR on the preprocessed image
-results = reader.readtext(img)
 
 # Helper functions for drawing boxes and text
 def box_coordinates(box):
@@ -49,12 +44,19 @@ def box_coordinates(box):
 def write_text(text, x, y, img, color=(50, 50, 255), font_size=30):
     img_pil = Image.fromarray(img)
     draw = ImageDraw.Draw(img_pil)
+    color = ImageColor.getrgb(color)
     draw.text((x, y - font_size), text, fill=color)
     return np.array(img_pil)
 
 def draw_img(img, lt, br, color=(200, 255, 0), thickness=2):
     cv2.rectangle(img, lt, br, color, thickness)
     return img
+
+# Initialize EasyOCR Reader
+reader = Reader(languages_list, gpu=gpu)
+
+# Perform OCR on the preprocessed image
+results = reader.readtext(img)
 
 # Draw OCR results on the image
 for (box, text, probability) in results:
@@ -71,8 +73,8 @@ cv2.destroyAllWindows()
 extracted_text = ' '.join([text[1] for text in results])
 print("Extracted Text:", extracted_text)
 
-# Use regex to find all digits in the extracted text
-pattern = r'\b\d\b'
-meter_values = "".join(re.findall(pattern, extracted_text))
+# Use regex to find and concatenate all digits in the extracted text
+pattern = r'\d+'
+meter_values = re.findall(pattern, extracted_text)
 # Print the found digits
 print("Extracted Digits:", meter_values)
