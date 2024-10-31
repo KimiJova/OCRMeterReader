@@ -49,7 +49,7 @@ def preprocess_image(image, meter_type):
         raise ValueError("Unsupported meter type")
 
 
-image = cv2.imread("images/file_46.jpg")
+image = cv2.imread("images/file_163.jpg")
 # pre-process the image by resizing it, converting it to
 # graycale, blurring it, and computing an edge map
 image = imutils.resize(image, height=500)
